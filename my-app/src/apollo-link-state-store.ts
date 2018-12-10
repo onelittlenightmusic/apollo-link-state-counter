@@ -1,25 +1,32 @@
 import gql from 'graphql-tag'
-export const argReadCount = () => {
-    return { query: gql`{ count2 @client }`}
+
+const argRead = (key: string) => gql`{ ${key} @client}`
+
+const argReadCache = (key: string) => {
+    return { query: argRead(key)}
 }
 
-export const argWriteCount = (value: number) => {
-    return {data: { count2: value }}
+const argWriteCache = (key:string, value: any) => {
+    return {data: { [key]: value }}
 }
 
-export const readCount = (cache: any) => {
-    return cache.readQuery(argReadCount()).count2
+export const readCache = (cache: any, key:string) => {
+    return cache.readQuery(argReadCache(key))[key]
 }
 
-export const writeCount = (cache: any, value: number) => {
-    return cache.writeData(argWriteCount(value))
+export const writeCache = (cache: any, key: string, value: any) => {
+    return cache.writeData(argWriteCache(key, value))
 }
 
-export const initialCounter = {
-    count2: 1,
+export const argMutate = (mutation: string) => {
+    return {
+        mutation: gql`mutation { ${mutation} @client }`
+    }
 }
 
-export const vueCounter = {
-    query: gql`{ count2 @client}`,
-    loadingKey: 'loading'
-  }
+export const apolloState = (key: string) => {
+    return {
+        query: argRead(key),
+        loadingKey: 'loading'
+    }
+}

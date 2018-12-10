@@ -4,7 +4,6 @@
       fixed
       clipped
       app
-      v-model="navBar"
     >
         <v-list dense class="pt-0">
           <router-link to="/table">

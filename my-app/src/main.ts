@@ -9,7 +9,7 @@ import { HttpLink } from 'apollo-link-http'
 import { InMemoryCache } from 'apollo-cache-inmemory'
 import VueApollo from 'vue-apollo'
 import { withClientState } from 'apollo-link-state';
-import { readCount, writeCount, initialCounter } from './apollo-link-state-store'
+import { readCache, writeCache } from './apollo-link-state-store'
 
 Vue.config.productionTip = false;
 
@@ -17,32 +17,30 @@ Vue.config.productionTip = false;
 Vue.use(require('vue-moment'))
 Vue.use(VueApollo)
 
-const cache = new InMemoryCache()
-
 const stateLink = withClientState({
-  cache,
-  defaults: initialCounter,
+  cache: new InMemoryCache(),
+  defaults: {
+    countSample: 0
+  },
   resolvers: {
     Mutation: {
       increment: (obj: any, args: any, {cache}: any) => {
-        var rtn = readCount(cache)
-        return writeCount(cache, rtn + 1)
+        var rtn = readCache(cache, "countSample")
+        writeCache(cache, "countSample", rtn + 1)
+        return null
       },
-      count2: (context: any, {data}: any, {cache}: any) => {
-        return readCount(cache)
-      }
     },
-      },
+  },
 });
 
-const httpLink = new HttpLink({ uri: 'http://127.0.0.1:4040' })
+// const httpLink = new HttpLink({ uri: 'http://127.0.0.1:4040' })
 
-const link = ApolloLink.from([stateLink, httpLink])
+// const link = ApolloLink.from([stateLink, httpLink])
 
 const apolloProvider = new VueApollo({
   defaultClient: new ApolloClient({
-    // link: new HttpLink({ uri: 'http://127.0.0.1:5042/graph' }),
-    link,
+    // link,
+    link: stateLink,
     cache: new InMemoryCache(),
     connectToDevTools: true
 
@@ -51,6 +49,6 @@ const apolloProvider = new VueApollo({
 new Vue({
   router,
   store,
-  provide: apolloProvider.provide(),
+  apolloProvider,
   render: (h) => h(App),
 }).$mount('#app');
